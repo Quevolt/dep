@@ -1,0 +1,53 @@
+﻿{% extends 'DjangoApp/base.html' %}
+{% block content %}
+<script>
+    function PlayerjsEvents(event, id, info) {
+        if (event != "time") {
+            console.log(event, info)
+        }
+        if (event == "time") {
+            console.log(player.api("muted"));
+        }
+        if (event == "init") {
+            player.api("moveplaylist", "ff");
+        }
+        if (event == "loaderror") {
+            console.log("loaderror")
+            console.log(event)
+            var idk = player.api("playlist_id");
+            const xhr = new XMLHttpRequest();
+            xhr.onload = () => {
+                if (xhr.status == 200) {
+                    var new_idk = player.api("playlist_id");
+                    if (new_idk == idk) {
+                        console.log(player.api("file", idk));
+                        console.log(player.api("find", idk));
+                        console.log(player.api("play"));
+                    }
+                } else {
+                    console.log("Server response: ", xhr.statusText);
+                }
+            };
+            xhr.open("POST", "/main");
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
+            xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+            xhr.send(`id=${idk}`);
+        }
+    };
+    // {% block HEAD %}{{ head|safe }}{% endblock %}
+    var player = new Playerjs({
+        id: "player",
+        file: [{%  for track_str in tracks %} {{ track_str|safe }} {% endfor %}
+        ]
+    });
+</script>
+<div class="new">
+    <img id="new1" src="static/heads/{{ head.head_id|safe }}.jpg">
+    <h1 class="new2">{{ head.title|safe }}</h1><p></p>
+    <h5 id="new3">{{ head.artists|safe }}</h5>
+</div>
+<div id="ff"></div>
+<div class="onpl">
+    <div id="player"></div>
+</div>
+{% endblock %}
